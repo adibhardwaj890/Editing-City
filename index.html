@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDITING CITY | Professional Editing Site</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: linear-gradient(45deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            --static-gold: #D4AF37;
+            --black: #050505;
+            --glass: rgba(255, 255, 255, 0.05);
+            --card-bg: rgba(13, 13, 13, 0.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background: var(--black); color: #fff; line-height: 1.6; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* --- BG & CURSOR ANIMATIONS --- */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        
+        .cursor-glow {
+            position: fixed; width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.07) 0%, transparent 70%);
+            border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+            z-index: 0; transition: width 0.3s, height 0.3s;
+        }
+
+        @keyframes slideLoop { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 10%; background: rgba(5, 5, 5, 0.9);
+            backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(212,175,55,0.3)); }
+        nav ul { display: flex; list-style: none; gap: 25px; }
+        nav ul li a { color: #aaa; text-decoration: none; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; transition: 0.3s; position: relative; }
+        nav ul li a:hover { color: var(--static-gold); letter-spacing: 1px; }
+        nav ul li a::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -5px; left: 0; background: var(--static-gold); transition: 0.3s; }
+        nav ul li a:hover::after { width: 100%; }
+
+        #hero { height: 75vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .tagline-box { border: 1px solid rgba(212, 175, 55, 0.4); padding: 60px 80px; position: relative; background: var(--glass); backdrop-filter: blur(10px); transition: 0.5s; }
+        .tagline-box:hover { border-color: var(--static-gold); box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        .tagline-box h1 { font-family: 'Bebas Neue', sans-serif; font-size: 5.5rem; letter-spacing: 4px; line-height: 1; margin-bottom: 10px; }
+        .tagline-box p { color: var(--static-gold); letter-spacing: 6px; text-transform: uppercase; font-size: 0.9rem; font-weight: 300; }
+
+        .software-banner { background: #0a0a0a; padding: 15px 0; overflow: hidden; white-space: nowrap; border-bottom: 1px solid #111; }
+        .banner-scroll { display: inline-block; animation: slideLoop 20s linear infinite; }
+        .banner-scroll span { color: #444; font-weight: 700; margin-right: 50px; font-size: 0.8rem; letter-spacing: 2px; transition: 0.3s; }
+        .banner-scroll span:hover { color: var(--static-gold); }
+
+        section { padding: 100px 5%; text-align: center; position: relative; }
+        .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; margin-bottom: 60px; letter-spacing: 3px; }
+        .section-title span { background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .v-container { 
+            max-width: 900px; margin: 0 auto; position: relative; 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.7); aspect-ratio: 16 / 9; background: #000; border: 1px solid #222;
+        }
+        .v-slide { display: none; height: 100%; width: 100%; }
+        .v-slide.active { display: block; animation: fadeIn 0.8s; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .next-btn { 
+            position: absolute; top: 50%; right: -30px; transform: translateY(-50%);
+            background: var(--gold); border: none; width: 65px; height: 65px; 
+            border-radius: 50%; cursor: pointer; color: #000; font-size: 1.5rem; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+        }
+        .next-btn:hover { transform: translateY(-50%) scale(1.15); box-shadow: 0 0 25px var(--static-gold); }
+
+        /* --- FIXED 4-COLUMN PRICING GRID --- */
+        .pricing-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; 
+            max-width: 1400px; 
+            margin: 0 auto;
+        }
+
+        .card { 
+            background: var(--card-bg); border: 1px solid #1a1a1a; padding: 35px 25px; 
+            text-align: left; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
+            display: flex; flex-direction: column; backdrop-filter: blur(10px); height: 100%;
+        }
+        .card:hover { border-color: var(--static-gold); transform: translateY(-15px); background: rgba(20, 20, 20, 0.9); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        .card::before { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 2px; background: var(--gold); transition: 0.5s; }
+        .card:hover::before { left: 0; }
+        
+        .card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 5px; }
+        .price { font-size: 1.8rem; font-weight: 700; color: var(--static-gold); margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: block; }
+        .card ul { list-style: none; font-size: 0.8rem; color: #bbb; margin-bottom: 25px; flex-grow: 1; }
+        .card ul li { margin-bottom: 10px; display: flex; align-items: flex-start; }
+        .card ul li i { color: var(--static-gold); margin-right: 10px; margin-top: 5px; }
+        .card .delivery { font-size: 0.65rem; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 15px; display: block; }
+        
+        .btn-hire { 
+            background: var(--gold); color: #000; border: none; padding: 14px; 
+            width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; 
+            letter-spacing: 1px; margin-top: auto; transition: 0.3s;
+        }
+        .btn-hire:hover { letter-spacing: 3px; filter: brightness(1.2); }
+
+        /* --- YOUTUBE & REVIEWS --- */
+        .yt-grid { display: flex; gap: 25px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+        .yt-grid iframe { flex: 1; min-width: 320px; max-width: 500px; height: 300px; border: 1px solid #222; border-radius: 4px; transition: 0.4s; }
+        .yt-grid iframe:hover { border-color: var(--static-gold); transform: scale(1.02); }
+        
+        .btn-yt { background: #ff0000; color: white; padding: 18px 45px; text-decoration: none; font-weight: 700; border-radius: 50px; display: inline-block; transition: 0.3s; box-shadow: 0 0 15px rgba(255,0,0,0.3); }
+        .btn-yt:hover { transform: scale(1.05); background: #cc0000; box-shadow: 0 0 25px rgba(255,0,0,0.5); }
+
+        .review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
+        .rev-card { background: var(--card-bg); padding: 40px; border: 1px solid #1a1a1a; text-align: left; backdrop-filter: blur(10px); transition: 0.4s; }
+        .rev-card:hover { border-color: var(--static-gold); }
+        .rev-card i { color: var(--static-gold); font-size: 1.5rem; margin-bottom: 15px; display: block; opacity: 0.6; }
+        .rev-card p { font-style: italic; color: #ccc; margin-bottom: 15px; font-size: 0.95rem; }
+        .rev-author { font-weight: 700; color: var(--static-gold); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+
+        .about-box { background: var(--card-bg); padding: 50px; border-left: 4px solid var(--static-gold); text-align: left; max-width: 850px; margin: 0 auto; backdrop-filter: blur(10px); }
+        
+        .social-logos { display: flex; justify-content: center; gap: 50px; font-size: 2.8rem; margin-top: 30px; }
+        .social-logos a { color: #555; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .social-logos a:hover { color: var(--static-gold); transform: translateY(-15px) rotate(5deg); }
+
+        footer { padding: 40px; font-size: 0.7rem; color: #444; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Responsive Fixes */
+        @media (max-width: 1200px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+            .tagline-box h1 { font-size: 3.5rem; }
+            .tagline-box { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="cursor-glow" id="cursor"></div>
+
+    <nav>
+        <div class="logo">EDITING CITY</div>
+        <ul>
+            <li><a href="#portfolio">Work</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#youtube">YouTube</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section id="hero">
+        <div class="tagline-box" data-aos="zoom-in" data-aos-duration="1200">
+            <h1>CRAFTING VISUAL EXCELLENCE</h1>
+            <p>Cinema Quality • Professional Storytelling</p>
+        </div>
+    </section>
+
+    <div class="software-banner">
+        <div class="banner-scroll">
+            <span>PREMIERE PRO</span> <span>AFTER EFFECTS</span> <span>FILMORA</span> <span>PHOTOSHOP</span>
+            <span>PREMIERE PRO</span> <span>AFTER EFFECTS</span> <span>FILMORA</span> <span>PHOTOSHOP</span>
+        </div>
+    </div>
+
+    <section id="portfolio">
+        <h2 class="section-title" data-aos="fade-up">Latest <span>Works</span></h2>
+        <div class="v-container" data-aos="fade-up" data-aos-delay="200">
+            <div class="v-slide active">
+                <iframe src="https://drive.google.com/file/d/1KpRCSnDZeSBucMVoKhijvP8p5OnufFbn/preview" allow="autoplay"></iframe>
+            </div>
+            <div class="v-slide">
+                <iframe src="https://drive.google.com/file/d/1rWdG_90RcEBH8rKzAfQdal77mgDo9--C/preview"></iframe>
+            </div>
+            <div class="v-slide">
+                <iframe src="https://drive.google.com/file/d/1rWdG_90RcEBH8rKzAfQdal77mgDo9--C/preview"></iframe>
+            </div>
+            <button class="next-btn" onclick="nextV()"> <i class="fa-solid fa-chevron-right"></i> </button>
+        </div>
+    </section>
+
+    <section id="services">
+        <h2 class="section-title" data-aos="fade-up">Service <span>Packs</span></h2>
+        <div class="pricing-grid">
+            <div class="card" data-aos="fade-up" data-aos-delay="100">
+                <h3>Basic</h3>
+                <span class="price">₹500</span>
+                <ul>
+                    <li><i class="fa-solid fa-check"></i> Standard Cuts & Transitions</li>
+                    <li><i class="fa-solid fa-check"></i> SFX & Background Music</li>
+                    <li><i class="fa-solid fa-check"></i> Wondershare Filmora Workflow</li>
+                    <li><i class="fa-solid fa-check"></i> 1 Revision </li>
+                </ul>
+                <span class="delivery">1 Day Delivery</span>
+                <button class="btn-hire" onclick="pay('Basic', 500)">HIRE</button>
+            </div>
+
+            <div class="card" style="border-top: 2px solid var(--static-gold);" data-aos="fade-up" data-aos-delay="200">
+                <h3>Intermediate</h3>
+                <span class="price">₹1000</span>
+                <ul>
+                    <li><i class="fa-solid fa-plus"></i> <b>All Basic Pack Features</b></li>
+                    <li><i class="fa-solid fa-check"></i> Basic Color Grading</li>
+                    <li><i class="fa-solid fa-check"></i> Basic Keyframing</li>
+                    <li><i class="fa-solid fa-check"></i> Basic Text </li>
+                    <li><i class="fa-solid fa-check"></i> Basic After Effect</li>
+                    <li><i class="fa-solid fa-check"></i> Wondershare Filmora</li>
+                    <li><i class="fa-solid fa-check"></i> Background Music and SFX</li>
+                    <li><i class="fa-solid fa-check"></i> Project File</li>
+                    <li><i class="fa-solid fa-check"></i> 3 Revision</li>
+                </ul>
+                <span class="delivery">3 Days Delivery</span>
+                <button class="btn-hire" onclick="pay('Intermediate', 1000)">HIRE</button>
+            </div>
+
+            <div class="card" data-aos="fade-up" data-aos-delay="300">
+                <h3>Pro</h3>
+                <span class="price">₹2000</span>
+                <ul>
+                    <li><i class="fa-solid fa-plus"></i> <b>All Basic And Intermediate Features</b></li>
+                    <li><i class="fa-solid fa-check"></i> Advance Color Grading</li>
+                    <li><i class="fa-solid fa-check"></i> Advance Keyframing</li>
+                    <li><i class="fa-solid fa-check"></i> Premium Text </li>
+                    <li><i class="fa-solid fa-check"></i> Advance After Effect</li>
+                    <li><i class="fa-solid fa-check"></i> Background Music and SFX</li>
+                    <li><i class="fa-solid fa-check"></i> Premiere Pro</li>
+                    <li><i class="fa-solid fa-check"></i> Project File</li>
+                    <li><i class="fa-solid fa-check"></i> 5 Revision</li>
+                </ul>
+                <span class="delivery">8 Days Delivery</span>
+                <button class="btn-hire" onclick="pay('Pro', 2000)">HIRE</button>
+            </div>
+
+            <div class="card" data-aos="fade-up" data-aos-delay="400">
+                <h3>Creator Only</h3>
+                <span class="price">₹1750</span>
+                <ul>
+                    <li><i class="fa-solid fa-plus"></i> <b>All Pro Pack Features</b></li>
+                    <li><i class="fa-solid fa-check"></i> Custom Thumbnails (PSD)</li>
+                    <li><i class="fa-solid fa-check"></i> YouTube SEO Optimized Description And Title</li>
+                    <li><i class="fa-solid fa-check"></i> Photoshop</li>
+                    <li><i class="fa-solid fa-check"></i> After Effect</li>
+                    <li><i class="fa-solid fa-check"></i> Premiere Pro</li>
+                    <li><i class="fa-solid fa-check"></i> Copyright Free BG Music And SFX</li>
+                    <li><i class="fa-solid fa-check"></i> Project File</li>
+                    <li><i class="fa-solid fa-check"></i> 4 Revisions</li>
+                </ul>
+                <span class="delivery">6 Days Delivery</span>
+                <button class="btn-hire" onclick="pay('Creator Only', 1750)">HIRE</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="youtube">
+        <h2 class="section-title" data-aos="fade-up">On <span>YouTube</span></h2>
+        <div class="yt-grid" data-aos="zoom-in">
+            <iframe src="https://www.youtube.com/embed/-SjbAlEObbU" frameborder="0" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/UhI5YnE9skQ" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <a href="https://www.youtube.com/@ImmortalFuns" class="btn-yt" target="_blank" data-aos="fade-up">SUBSCRIBE</a>
+    </section>
+
+    <section id="reviews">
+        <h2 class="section-title" data-aos="fade-up">Client <span>Reviews</span></h2>
+        <div class="review-grid">
+            <div class="rev-card" data-aos="flip-left" data-aos-delay="100">
+                <i class="fa-solid fa-quote-left"></i>
+                <p>The cinematic transitions and color grading completely transformed my vlog. Highly recommend!</p>
+                <div class="rev-author">- Tech Reviews Unlimited</div>
+            </div>
+            <div class="rev-card" data-aos="flip-left" data-aos-delay="200">
+                <i class="fa-solid fa-quote-left"></i>
+                <p>Fast delivery and incredible attention to detail. Choice of music was spot on.</p>
+                <div class="rev-author">- Lifestyle With Sarah</div>
+            </div>
+            <div class="rev-card" data-aos="flip-left" data-aos-delay="300">
+                <i class="fa-solid fa-quote-left"></i>
+                <p>The best editor I've worked with. Helped my video get 2x more views.</p>
+                <div class="rev-author">- Gaming Pro HD</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2 class="section-title" data-aos="fade-up">ABOUT <span>ME</span></h2>
+        <div class="about-box" data-aos="fade-right">
+            <p>I transform raw footage into viral visual stories. Using high-end tools like Premiere Pro and After Effects, I help creators achieve visual excellence and audience hooks.</p>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2 class="section-title" data-aos="fade-up">Let's <span>Connect</span></h2>
+        <div class="social-logos">
+            <a href="https://discord.gg/vvzpuBfcb8" target="_blank" data-aos="zoom-in" data-aos-delay="100"><i class="fa-brands fa-discord"></i></a>
+            <a href="https://instagram.com/YOUR_USERNAME" target="_blank" data-aos="zoom-in" data-aos-delay="200"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://x.com/ImmortalSpiders" target="_blank" data-aos="zoom-in" data-aos-delay="300"><i class="fa-brands fa-x"></i></a>
+            <a href="mailto:adibhardwaj890@gmail.com" class="email-btn" data-aos="zoom-in" data-aos-delay="400"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+    </section>
+
+    <footer style="text-align:center;">
+        &copy; 2026 EDITING CITY • Crafting Visual Excellence
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 1000, once: true });
+
+        // Cursor Tracking Glow
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Portfolio Logic
+        let sIdx = 0;
+        function nextV() {
+            const slides = document.querySelectorAll('.v-slide');
+            let currentIframe = slides[sIdx].querySelector('iframe');
+            let currentSrc = currentIframe.src;
+            currentIframe.src = ""; currentIframe.src = currentSrc;
+            slides[sIdx].classList.remove('active');
+            sIdx = (sIdx + 1) % slides.length;
+            slides[sIdx].classList.add('active');
+        }
+
+        // PAYMENT SYSTEM (ORIGINAL)
+        function pay(name, price) {
+            const links = {
+                "Basic": "https://rzp.io/l/YOUR_BASIC_LINK",
+                "Intermediate": "https://rzp.io/l/YOUR_INTERMEDIATE_LINK",
+                "Pro": "https://rzp.io/l/YOUR_PRO_LINK",
+                "Creator Only": "https://rzp.io/l/YOUR_CREATOR_LINK"
+            };
+            if (links[name]) {
+                window.open(links[name], "_blank");
+            } else {
+                alert("Payment link not set!");
+            }
+        }
+
+        document.querySelector('.email-btn').addEventListener('click', function() {
+            window.location.href = "mailto:adibhardwaj890@gmail.com";
+        });
+
+        // Particle Background Logic
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.1;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 0.4 - 0.2;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.1)';
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+        function init() { for(let i=0; i<80; i++) particles.push(new Particle()); }
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        init(); animate();
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    </script>
+</body>
+</html>
